@@ -1,25 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Get Location</title>
-    <script>
-      function getLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(showPosition);
-        } else {
-          alert("Geolocation is not supported by this browser.");
-        }
+<head>
+  <title>Get Location and Township</title>
+  <script>
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error);
+      } else {
+        alert("Geolocation is not supported by this browser.");
       }
+    }
 
-      function showPosition(position) {
-        alert("Latitude: " + position.coords.latitude +
-              "\nLongitude: " + position.coords.longitude);
-        // You could also send this to your server:
-        // fetch('/location', { method: 'POST', body: JSON.stringify(position.coords) });
-      }
-    </script>
-  </head>
-  <body onload="getLocation()">
-    <h1>Fetching Your Location...</h1>
-  </body>
+    function success(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      // Reverse geocoding using OpenStreetMap's Nominatim API
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+        .then(response => response.json())
+        .then(data => {
+          const township = data.address.suburb || data.address.town || data.address.city || "Unknown";
+          alert(`Latitude: ${lat}\nLongitude: ${lon}\nTownship: ${township}`);
+        });
+    }
+
+    function error() {
+      alert("Unable to retrieve your location.");
+    }
+  </script>
+</head>
+<body onload="getLocation()">
+  <h2>Fetching your location and township...</h2>
+</body>
 </html>
